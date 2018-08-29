@@ -2,11 +2,15 @@ package com.example.nminh.opencvsampleapp;
 
 import android.Manifest;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.MediaActionSound;
+import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -14,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -86,7 +91,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     MediaActionSound sound;
     Mat resultMat;
 
-    //TODO: tìm cách sửa và lưu ảnh vào trong bộ nhớ sau khi chụp
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -124,35 +128,11 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 sound = new MediaActionSound();
                 sound.play(MediaActionSound.SHUTTER_CLICK);
 
-                Date currentDate = new Date();
-                String currentDateString = currentDate.toString();
-                String fileName = currentDateString;
+                String fileName = getCurrentDate();
                 Bitmap resultBitmap = MatToBitmap(resultMat);
                 mOpenCvCameraView.takePicture(resultBitmap, fileName);
             }
         });
-    }
-
-    private Bitmap MatToBitmap(Mat mat) {
-        Bitmap bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.RGB_565);
-        Utils.matToBitmap(mat, bitmap);
-        Bitmap image = Bitmap.createBitmap(bitmap);
-        return bitmap;
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (mOpenCvCameraView != null)
-            mOpenCvCameraView.disableView();
-    }
-
-    @Override
-    protected void onStop() {
-        if (sound != null) {
-            sound.release();
-        }
-        super.onStop();
     }
 
     @Override
@@ -176,6 +156,38 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 }
             }
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mOpenCvCameraView != null)
+            mOpenCvCameraView.disableView();
+    }
+
+    @Override
+    protected void onStop() {
+        if (sound != null) {
+            sound.release();
+        }
+        super.onStop();
+    }
+
+    public void onDestroy() {
+        super.onDestroy();
+        if (mOpenCvCameraView != null)
+            mOpenCvCameraView.disableView();
+    }
+
+    public Bitmap MatToBitmap(Mat mat) {
+        Bitmap bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.RGB_565);
+        Utils.matToBitmap(mat, bitmap);
+        Bitmap image = Bitmap.createBitmap(bitmap);
+        return bitmap;
+    }
+
+    public static String getCurrentDate() {
+        return new Date().toString();
     }
 
     private boolean hasPermission(String permission) {
@@ -223,14 +235,11 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     }
 
-    public void onDestroy() {
-        super.onDestroy();
-        if (mOpenCvCameraView != null)
-            mOpenCvCameraView.disableView();
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = new MenuInflater(this);
+        inflater.inflate(R.menu.main_option_menu, menu);
+
         Log.i(TAG, "called onCreateOptionsMenu");
         mItemPreviewRGBA = menu.add("Preview RGBA");
         mItemPreviewHist = menu.add("Histograms");
@@ -246,6 +255,10 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Log.i(TAG, "called onOptionsItemSelected; selected item: " + item);
+        if (item.getItemId() == R.id.opt_open_image) {
+            Intent getImageIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            startActivityForResult(getImageIntent, 0);
+        }
         if (item == mItemPreviewRGBA)
             viewMode = VIEW_MODE_RGBA;
         if (item == mItemPreviewHist)
@@ -263,6 +276,19 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         else if (item == mItemPreviewPosterize)
             viewMode = VIEW_MODE_POSTERIZE;
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            Uri imageUri = data.getData();
+            String imagePath = imageUri.toString();
+
+            Intent i = new Intent(this, ShowImageActivity.class);
+            i.putExtra("image path", imagePath);
+            startActivity(i);
+        }
     }
 
     @Override

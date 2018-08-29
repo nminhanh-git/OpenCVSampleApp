@@ -17,12 +17,13 @@ import java.io.IOException;
 
 public class mJavaCameraView extends JavaCameraView implements Camera.PictureCallback {
 
+    private String mPictureFileName;
+    private Bitmap imageBitmap;
     public mJavaCameraView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    private String mPictureFileName;
-    private Bitmap imageBitmap;
+
 
     public void takePicture(Bitmap bitmap, String fileName) {
         this.mPictureFileName = fileName;
@@ -37,15 +38,19 @@ public class mJavaCameraView extends JavaCameraView implements Camera.PictureCal
         mCamera.startPreview();
         mCamera.setPreviewCallback(this);
 
-        File picPath = new File(Environment.getExternalStorageDirectory().getPath() + "/DCIM/Camera", "OpenCV_" + mPictureFileName + ".jpeg");
+        savePicture(getContext(), imageBitmap, "OpenCV_" + mPictureFileName + ".jpeg");
+    }
+
+    public static void savePicture(Context context, Bitmap bitmap, String imageName){
         FileOutputStream fos = null;
+        File picPath = new File(Environment.getExternalStorageDirectory().getPath() + "/DCIM/Camera", imageName);
 
         try {
             fos = new FileOutputStream(picPath);
-            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-            Toast.makeText(getContext(), "Taken", Toast.LENGTH_SHORT).show();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            Toast.makeText(context, "Taken", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
-            Toast.makeText(getContext(), "Can't take picture. Error: IOException", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Can't take picture. Error: IOException", Toast.LENGTH_SHORT).show();
         } finally {
             try {
                 fos.close();
