@@ -48,7 +48,7 @@ public class mJavaCameraView extends JavaCameraView implements Camera.PictureCal
         try {
             fos = new FileOutputStream(picPath);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-            Toast.makeText(context, "Taken", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Image saved to /DCIM/Camera", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Toast.makeText(context, "Can't take picture. Error: IOException", Toast.LENGTH_SHORT).show();
         } finally {

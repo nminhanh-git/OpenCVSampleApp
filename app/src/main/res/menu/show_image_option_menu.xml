@@ -2,18 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/opt_cancel"
-        android:title="cancel"
-        android:visible="false"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/opt_save"
-        android:title="save"
-        android:visible="false"
+        android:id="@+id/opt_another_image"
+        android:icon="@drawable/ic_image_library"
+        android:title="Other image"
         app:showAsAction="always" />
     <item
         android:id="@+id/opt_rgba"
         android:title="RGBA" />
+    <item
+        android:id="@+id/opt_brightness"
+        android:title="Brightness - Contrast" />
     <item
         android:id="@+id/opt_histograms"
         android:title="Histograms" />
@@ -22,18 +20,25 @@
         android:title="Canny" />
     <item
         android:id="@+id/opt_sepia"
-        android:title="sepia" />
+        android:title="Sepia" />
     <item
         android:id="@+id/opt_sobel"
         android:title="Sobel" />
-    <item
-        android:id="@+id/opt_zoom"
-        android:title="Zoom" />
     <item
         android:id="@+id/opt_pixelize"
         android:title="Pixelize" />
     <item
         android:id="@+id/opt_posterize"
         android:title="Posterize" />
-
+    <item
+        android:id="@+id/opt_blur"
+        android:title="Gaussian Blur" />
+    <item
+        android:id="@+id/opt_rotation"
+        android:icon="@drawable/ic_rotate"
+        android:title="Image rotation"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/opt_negative"
+        android:title="Negative" />
 </menu>

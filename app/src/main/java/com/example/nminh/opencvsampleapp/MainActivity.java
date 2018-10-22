@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.MediaActionSound;
 import android.net.Uri;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,7 +17,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -54,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public static final int VIEW_MODE_PIXELIZE = 6;
     public static final int VIEW_MODE_POSTERIZE = 7;
 
+    private MenuItem mItemOpenGallery;
     private MenuItem mItemPreviewRGBA;
     private MenuItem mItemPreviewHist;
     private MenuItem mItemPreviewCanny;
@@ -74,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private MatOfFloat mRanges;
     private Scalar mColorsRGB[];
     private Scalar mColorsHue[];
-    private Scalar mWhilte;
+    private Scalar mWhite;
     private Point mP1;
     private Point mP2;
     private float mBuff[];
@@ -131,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 String fileName = getCurrentDate();
                 Bitmap resultBitmap = MatToBitmap(resultMat);
                 mOpenCvCameraView.takePicture(resultBitmap, fileName);
+
             }
         });
     }
@@ -237,10 +237,11 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = new MenuInflater(this);
-        inflater.inflate(R.menu.main_option_menu, menu);
-
         Log.i(TAG, "called onCreateOptionsMenu");
+        mItemOpenGallery = menu.add("Open...");
+        mItemOpenGallery.setIcon(R.drawable.ic_image_library);
+        mItemOpenGallery.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
         mItemPreviewRGBA = menu.add("Preview RGBA");
         mItemPreviewHist = menu.add("Histograms");
         mItemPreviewCanny = menu.add("Canny");
@@ -255,7 +256,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Log.i(TAG, "called onOptionsItemSelected; selected item: " + item);
-        if (item.getItemId() == R.id.opt_open_image) {
+        if (item == mItemOpenGallery) {
             Intent getImageIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             startActivityForResult(getImageIntent, 0);
         }
@@ -308,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 new Scalar(0, 120, 255, 255), new Scalar(0, 60, 255, 255), new Scalar(0, 0, 255, 255), new Scalar(64, 0, 255, 255), new Scalar(120, 0, 255, 255),
                 new Scalar(180, 0, 255, 255), new Scalar(255, 0, 255, 255), new Scalar(255, 0, 215, 255), new Scalar(255, 0, 85, 255), new Scalar(255, 0, 0, 255)
         };
-        mWhilte = Scalar.all(255);
+        mWhite = Scalar.all(255);
         mP1 = new Point();
         mP2 = new Point();
 
@@ -378,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                     mP1.x = mP2.x = offset + (3 * (mHistSizeNum + 10) + h) * thickness;
                     mP1.y = sizeRgba.height - 1;
                     mP2.y = mP1.y - 2 - (int) mBuff[h];
-                    Imgproc.line(rgba, mP1, mP2, mWhilte, thickness);
+                    Imgproc.line(rgba, mP1, mP2, mWhite, thickness);
                 }
                 // Hue
                 Imgproc.calcHist(Arrays.asList(mIntermediateMat), mChannels[0], mMat0, hist, mHistSize, mRanges);
@@ -430,8 +431,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 resultMat = mZoomWindow.clone();
                 zoomCorner.release();
                 mZoomWindow.release();
-
-
                 break;
 
             case MainActivity.VIEW_MODE_PIXELIZE:
